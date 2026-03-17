@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ip-spoof-mac.sh — temp MAC spoofing using verified vendor OUIs
-# Usage: sudo ./ip-spoof-mac.sh <interface>
+# spoof_mac.sh — temp MAC spoofing using verified vendor OUIs
+# Usage: sudo ./spoof_mac.sh <interface>
 
 set -euo pipefail
 
