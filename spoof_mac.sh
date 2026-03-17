@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ip-spoof-mac.sh — simple temp MAC spoofing using ip only
+# ip-spoof-mac.sh — temp MAC spoofing using verified vendor OUIs
 # Usage: sudo ./ip-spoof-mac.sh <interface>
 
 set -euo pipefail
@@ -23,18 +23,31 @@ if ! ip link show "$IFACE" >/dev/null 2>&1; then
   exit 1
 fi
 
-# generate random locally-administered unicast MAC
+# verified vendor OUIs
+OUIS=(
+  "dc:a6:32"  # Raspberry Pi
+  "b8:27:eb"  # Raspberry Pi
+  "d4:81:d7"  # Dell
+  "8c:8d:28"  # Dell
+  "3c:97:0e"  # Apple
+  "f0:18:98"  # Apple
+  "00:50:f2"  # Microsoft
+  "fc:77:74"  # Samsung
+  "40:b0:76"  # Intel
+  "8c:f3:19"  # Intel
+  "00:20:6b"  # Konica Minolta
+  "d0:21:f9"  # Ubiquiti
+)
+
+# pick a random verified OUI and generate random last 3 octets
 generate_mac() {
-  # first octet: clear multicast bit (LSB) and set locally-administered bit (second LSB)
-  # compute first byte accordingly, then produce remaining 5 random bytes
-  b0=$(( (RANDOM % 256 & 0xFC) | 0x02 ))
-  printf "%02x:%02x:%02x:%02x:%02x:%02x" \
-    "$b0" \
+  local oui="${OUIS[$RANDOM % ${#OUIS[@]}]}"
+  local suffix
+  suffix=$(printf '%02x:%02x:%02x' \
     $((RANDOM % 256)) \
     $((RANDOM % 256)) \
-    $((RANDOM % 256)) \
-    $((RANDOM % 256)) \
-    $((RANDOM % 256))
+    $((RANDOM % 256)))
+  echo "$oui:$suffix"
 }
 
 NEW_MAC="$(generate_mac)"
@@ -50,4 +63,5 @@ ip link set dev "$IFACE" up
 
 # report
 CURRENT="$(cat /sys/class/net/"$IFACE"/address 2>/dev/null || true)"
+echo "Vendor:      $(echo "$NEW_MAC" | cut -d: -f1-3) (${OUIS_NAMES[$RANDOM % ${#OUIS[@]}]:-verified vendor})"
 echo "Current MAC for $IFACE: $CURRENT"
