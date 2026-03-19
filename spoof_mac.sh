@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # spoof_mac.sh — temp MAC spoofing using verified vendor OUIs
 # Usage: sudo ./spoof_mac.sh <interface>
+# (Must be run by root/sudo)
 
 set -euo pipefail
 
